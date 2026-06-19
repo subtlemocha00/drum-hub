@@ -12,9 +12,14 @@ const LINKS = [
     icon: '▤',
     match: ['/library', '/rudiments', '/grooves', '/warmups', '/favorites']
   },
+  {
+    to: '/progress',
+    label: 'Progress',
+    icon: '📈',
+    match: ['/progress', '/statistics', '/plans', '/practice-logs', '/skill-tree', '/goals']
+  },
   { to: '/metronome', label: 'Metronome', icon: '𝅘𝅥', match: ['/metronome'] },
-  { to: '/session', label: 'Session', icon: '⏱', match: ['/session'] },
-  { to: '/settings', label: 'Settings', icon: '⚙', match: ['/settings'] }
+  { to: '/session', label: 'Session', icon: '⏱', match: ['/session'] }
 ]
 
 /**

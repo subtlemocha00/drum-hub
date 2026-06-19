@@ -7,17 +7,18 @@ import { getRecentSessions } from '../features/sessions/sessionService.js'
 import { computeCurrentStreak } from '../features/sessions/stats.js'
 import { getRudiments, getAllRudimentProgress } from '../features/rudiments/rudimentService.js'
 import { recentlyPracticed, suggestNextRudiment } from '../features/rudiments/rudimentStats.js'
-import { getGrooves } from '../features/grooves/grooveService.js'
 import { getWarmups } from '../features/warmups/warmupService.js'
-import { getRecentIds } from '../lib/recentlyViewed.js'
+import { getActivePlanProgress } from '../features/plans/planService.js'
+import { getPlanById, nextTask } from '../features/plans/planData.js'
+import { getLastLog } from '../features/logs/logService.js'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
-import { formatDuration } from '../lib/format.js'
+import { formatDateTime, formatDuration } from '../lib/format.js'
 import { Spinner } from '../components/Loader.jsx'
 import { Badge } from '../components/Badge.jsx'
 
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
-/** Phase 2 dashboard: streak, quick actions, light personalization. */
+/** Phase 3 dashboard: actionable guidance — what to practice and what's next. */
 export function DashboardPage() {
   useDocumentTitle('Home')
   const { user } = useAuth()
@@ -27,8 +28,9 @@ export function DashboardPage() {
   const [sessions, setSessions] = useState([])
   const [rudiments, setRudiments] = useState([])
   const [progressById, setProgressById] = useState({})
-  const [grooves, setGrooves] = useState([])
   const [warmups, setWarmups] = useState([])
+  const [activePlan, setActivePlan] = useState(null)
+  const [lastLog, setLastLog] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,18 +38,20 @@ export function DashboardPage() {
     let cancelled = false
     setLoading(true)
     Promise.allSettled([
-      getRecentSessions(user.uid, 20),
+      getRecentSessions(user.uid, 10),
       getRudiments(user.uid),
       getAllRudimentProgress(user.uid),
-      getGrooves(user.uid),
-      getWarmups(user.uid)
-    ]).then(([s, r, p, g, w]) => {
+      getWarmups(user.uid),
+      getActivePlanProgress(user.uid),
+      getLastLog(user.uid)
+    ]).then(([s, r, p, w, plan, log]) => {
       if (cancelled) return
       if (s.status === 'fulfilled') setSessions(s.value)
       if (r.status === 'fulfilled') setRudiments(r.value)
       if (p.status === 'fulfilled') setProgressById(p.value)
-      if (g.status === 'fulfilled') setGrooves(g.value)
       if (w.status === 'fulfilled') setWarmups(w.value)
+      if (plan.status === 'fulfilled') setActivePlan(plan.value)
+      if (log.status === 'fulfilled') setLastLog(log.value)
       setLoading(false)
     })
     return () => {
@@ -58,19 +62,28 @@ export function DashboardPage() {
   const streak = computeCurrentStreak(sessions)
   const firstName = (user?.displayName || user?.email || 'drummer').split(' ')[0]
 
-  const practiced = useMemo(
-    () => recentlyPracticed(rudiments, progressById, 4),
-    [rudiments, progressById]
-  )
   const suggestion = useMemo(
     () => suggestNextRudiment(rudiments, progressById),
     [rudiments, progressById]
   )
-  const recentGrooves = useMemo(() => {
-    if (!grooves.length) return []
-    const ids = getRecentIds('grooves')
-    return ids.map((id) => grooves.find((g) => g.id === id)).filter(Boolean).slice(0, 4)
-  }, [grooves])
+  const suggestedWarmup = useMemo(
+    () => (warmups.length ? randomItem(warmups) : null),
+    [warmups]
+  )
+  const lastRudiment = useMemo(() => {
+    const recent = recentlyPracticed(rudiments, progressById, 1)
+    return recent[0]?.rudiment ?? null
+  }, [rudiments, progressById])
+
+  // Resolve the active plan's static definition + next task.
+  const planInfo = useMemo(() => {
+    if (!activePlan) return null
+    const plan = getPlanById(activePlan.id)
+    if (!plan) return null
+    return { plan, next: nextTask(plan, activePlan.completedTasks) }
+  }, [activePlan])
+
+  const lastSession = sessions[0] ?? null
 
   const handleStart = () => {
     startSession()
@@ -101,6 +114,26 @@ export function DashboardPage() {
         </div>
       </section>
 
+      {/* Continue practice plan */}
+      {planInfo && (
+        <section>
+          <h2 className="section-title">Continue your plan</h2>
+          <Link to={`/plans/${planInfo.plan.id}`} className="card continue-card">
+            <div>
+              <span className="list-card__title">{planInfo.plan.name}</span>
+              {planInfo.next ? (
+                <p className="continue-card__next muted">
+                  Week {planInfo.next.week}, Day {planInfo.next.day} — {planInfo.next.task.label}
+                </p>
+              ) : (
+                <p className="continue-card__next muted">Plan complete 🎉</p>
+              )}
+            </div>
+            <span className="suggest-card__cta">Continue ›</span>
+          </Link>
+        </section>
+      )}
+
       <section className="quick-grid">
         <button className="btn btn--primary btn--lg" onClick={handleStart}>
           {isActive ? 'Active session' : 'Start session'}
@@ -120,80 +153,88 @@ export function DashboardPage() {
         <div className="center-row"><Spinner /></div>
       ) : (
         <>
-          {suggestion && (
-            <section className="suggest">
-              <h2 className="section-title">Suggested next</h2>
-              <Link to={`/rudiments/${suggestion.id}`} className="card suggest-card">
-                <div>
-                  <span className="list-card__title">{suggestion.name}</span>
-                  <div className="badge-row">
-                    <Badge tone={suggestion.difficulty}>{suggestion.difficulty}</Badge>
-                    <span className="muted">{suggestion.category}</span>
+          {/* Suggestions */}
+          {(suggestion || suggestedWarmup) && (
+            <section className="recent">
+              <h2 className="section-title">Suggested for today</h2>
+              {suggestion && (
+                <Link to={`/rudiments/${suggestion.id}`} className="card suggest-card">
+                  <div>
+                    <span className="muted">Rudiment</span>
+                    <div className="list-card__title">{suggestion.name}</div>
+                    <div className="badge-row">
+                      <Badge tone={suggestion.difficulty}>{suggestion.difficulty}</Badge>
+                      <span className="muted">{suggestion.category}</span>
+                    </div>
                   </div>
-                </div>
-                <span className="suggest-card__cta">Practice ›</span>
-              </Link>
+                  <span className="suggest-card__cta">Practice ›</span>
+                </Link>
+              )}
+              {suggestedWarmup && (
+                <Link to={`/warmups/${suggestedWarmup.id}`} className="card suggest-card">
+                  <div>
+                    <span className="muted">Warmup</span>
+                    <div className="list-card__title">{suggestedWarmup.name}</div>
+                    <span className="muted">
+                      {suggestedWarmup.focus} · {suggestedWarmup.durationMinutes} min
+                    </span>
+                  </div>
+                  <span className="suggest-card__cta">Start ›</span>
+                </Link>
+              )}
             </section>
           )}
 
-          {practiced.length > 0 && (
-            <section className="recent">
-              <h2 className="section-title">Recently practiced</h2>
-              <ul className="card-list">
-                {practiced.map(({ rudiment, progress }) => (
-                  <li key={rudiment.id}>
-                    <Link to={`/rudiments/${rudiment.id}`} className="card list-card">
-                      <div className="list-card__main">
-                        <span className="list-card__title">{rudiment.name}</span>
-                        <span className="muted">
-                          {progress.bestBPM ? `Best ${progress.bestBPM} BPM` : '—'}
-                        </span>
-                      </div>
-                      <span className="muted">›</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {recentGrooves.length > 0 && (
-            <section className="recent">
-              <h2 className="section-title">Recently viewed grooves</h2>
-              <ul className="card-list">
-                {recentGrooves.map((g) => (
-                  <li key={g.id}>
-                    <Link to={`/grooves/${g.id}`} className="card list-card">
-                      <div className="list-card__main">
-                        <span className="list-card__title">{g.name}</span>
-                        <span className="muted">{g.style} · {g.bpm} BPM</span>
-                      </div>
-                      <span className="muted">›</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
+          {/* Recent activity */}
           <section className="recent">
-            <h2 className="section-title">Recent sessions</h2>
-            {sessions.length === 0 ? (
-              <p className="empty">No sessions yet. Start your first one above.</p>
-            ) : (
-              <ul className="session-list">
-                {sessions.slice(0, 3).map((s) => (
-                  <li key={s.id} className="card session-list__item">
-                    <span className="session-list__date">
-                      {s.startTime ? s.startTime.toLocaleDateString() : '—'}
+            <h2 className="section-title">Recent activity</h2>
+            <ul className="card-list">
+              <li className="card activity-row">
+                <span className="activity-row__icon" aria-hidden="true">⏱</span>
+                <div className="list-card__main">
+                  <span className="activity-row__label muted">Last session</span>
+                  <span>
+                    {lastSession
+                      ? `${formatDuration(lastSession.durationSeconds)} · ${formatDateTime(lastSession.startTime)}`
+                      : 'No sessions yet'}
+                  </span>
+                </div>
+              </li>
+              <li>
+                <Link to="/practice-logs" className="card activity-row">
+                  <span className="activity-row__icon" aria-hidden="true">📓</span>
+                  <div className="list-card__main">
+                    <span className="activity-row__label muted">Last log</span>
+                    <span>
+                      {lastLog
+                        ? lastLog.notes || lastLog.practicedItems.join(', ') || 'Logged'
+                        : 'No logs yet'}
                     </span>
-                    <span className="session-list__duration">
-                      {formatDuration(s.durationSeconds)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+                  </div>
+                  <span className="muted">›</span>
+                </Link>
+              </li>
+              <li>
+                {lastRudiment ? (
+                  <Link to={`/rudiments/${lastRudiment.id}`} className="card activity-row">
+                    <span className="activity-row__icon" aria-hidden="true">✋</span>
+                    <div className="list-card__main">
+                      <span className="activity-row__label muted">Last rudiment</span>
+                      <span>{lastRudiment.name}</span>
+                    </div>
+                    <span className="muted">›</span>
+                  </Link>
+                ) : (
+                  <div className="card activity-row">
+                    <span className="activity-row__icon" aria-hidden="true">✋</span>
+                    <div className="list-card__main">
+                      <span className="activity-row__label muted">Last rudiment</span>
+                      <span>Nothing practiced yet</span>
+                    </div>
+                  </div>
+                )}
+              </li>
+            </ul>
           </section>
         </>
       )}

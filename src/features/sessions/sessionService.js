@@ -39,24 +39,33 @@ export async function saveSession(uid, { startTime, endTime, durationSeconds }) 
   return ref.id
 }
 
+function mapSession(docSnap) {
+  const data = docSnap.data()
+  return {
+    id: docSnap.id,
+    startTime: data.startTime?.toDate?.() ?? null,
+    endTime: data.endTime?.toDate?.() ?? null,
+    durationSeconds: data.durationSeconds ?? 0
+  }
+}
+
 /**
  * Load the most recent completed sessions, newest first.
  * @returns {Promise<Array<{ id, startTime: Date|null, endTime: Date|null, durationSeconds: number }>>}
  */
 export async function getRecentSessions(uid, count = 5) {
-  const q = query(
-    sessionsCollection(uid),
-    orderBy('startTime', 'desc'),
-    limit(count)
-  )
+  const q = query(sessionsCollection(uid), orderBy('startTime', 'desc'), limit(count))
   const snapshot = await getDocs(q)
-  return snapshot.docs.map((docSnap) => {
-    const data = docSnap.data()
-    return {
-      id: docSnap.id,
-      startTime: data.startTime?.toDate?.() ?? null,
-      endTime: data.endTime?.toDate?.() ?? null,
-      durationSeconds: data.durationSeconds ?? 0
-    }
-  })
+  return snapshot.docs.map(mapSession)
+}
+
+/**
+ * Load all completed sessions (newest first) for statistics. Practice-session
+ * volume per user is modest, so a single read is acceptable here; if it ever
+ * grows we can switch to date-bounded queries.
+ */
+export async function getAllSessions(uid) {
+  const q = query(sessionsCollection(uid), orderBy('startTime', 'desc'))
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map(mapSession)
 }

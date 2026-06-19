@@ -19,6 +19,13 @@ import { GrooveDetailPage } from '../pages/GrooveDetailPage.jsx'
 import { WarmupsPage } from '../pages/WarmupsPage.jsx'
 import { WarmupDetailPage } from '../pages/WarmupDetailPage.jsx'
 import { FavoritesPage } from '../pages/FavoritesPage.jsx'
+import { ProgressPage } from '../pages/ProgressPage.jsx'
+import { StatisticsPage } from '../pages/StatisticsPage.jsx'
+import { PlansPage } from '../pages/PlansPage.jsx'
+import { PlanDetailPage } from '../pages/PlanDetailPage.jsx'
+import { PracticeLogsPage } from '../pages/PracticeLogsPage.jsx'
+import { SkillTreePage } from '../pages/SkillTreePage.jsx'
+import { GoalsPage } from '../pages/GoalsPage.jsx'
 
 /** Root "/" — sends users to the dashboard or login based on auth state. */
 function Index() {
@@ -55,6 +62,15 @@ export default function App() {
           <Route path="/warmups" element={<WarmupsPage />} />
           <Route path="/warmups/:id" element={<WarmupDetailPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
+
+          {/* Phase 3 — progression */}
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/statistics" element={<StatisticsPage />} />
+          <Route path="/plans" element={<PlansPage />} />
+          <Route path="/plans/:id" element={<PlanDetailPage />} />
+          <Route path="/practice-logs" element={<PracticeLogsPage />} />
+          <Route path="/skill-tree" element={<SkillTreePage />} />
+          <Route path="/goals" element={<GoalsPage />} />
         </Route>
       </Route>
 

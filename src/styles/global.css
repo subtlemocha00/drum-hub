@@ -1036,6 +1036,364 @@ code {
   white-space: nowrap;
 }
 
+/* ============================================================
+   Phase 3 — statistics, logs, plans, skill tree, goals
+   ============================================================ */
+
+/* Header settings action */
+.app-header__action {
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  line-height: 1;
+  padding: 0.3rem;
+}
+.app-header__action:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Form controls shared with Phase 1 fields */
+.field select,
+.textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
+  width: 100%;
+}
+.textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+.field select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(22, 224, 189, 0.15);
+}
+
+/* ---------- Statistics ---------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+.chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.chart-head .chips {
+  overflow: visible;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 160px;
+}
+.bar-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.bar-chart__track {
+  width: 100%;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.bar-chart__bar {
+  width: 70%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+  box-shadow: var(--glow);
+}
+.bar-chart__bar--empty {
+  background: var(--bg-card-2);
+  box-shadow: none;
+}
+.bar-chart__label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ---------- Practice logs ---------- */
+.log-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.log-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.log-card__date {
+  font-weight: 700;
+}
+.log-card__notes {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ---------- Practice plans ---------- */
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text);
+}
+.plan-card:hover {
+  text-decoration: none;
+  border-color: var(--accent-strong);
+}
+.plan-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.plan-card__summary {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.plan-card__progress,
+.plan-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.plan-progress {
+  margin-bottom: 0.75rem;
+}
+.plan-next {
+  margin-bottom: 0.75rem;
+}
+
+.week-card {
+  padding: 0;
+  overflow: hidden;
+}
+.week-card__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.week-card__body {
+  padding: 0 1rem 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.plan-day {
+  padding-top: 0.75rem;
+}
+.plan-day__title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+.task-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  cursor: pointer;
+}
+.task input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+.task__label {
+  flex: 1;
+}
+.task input:checked + .task__label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.task__min {
+  font-size: 0.85rem;
+}
+
+/* ---------- Skill tree ---------- */
+.skill-branch {
+  margin-bottom: 0.5rem;
+}
+.skill-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.skill-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.skill-node--locked {
+  opacity: 0.55;
+}
+.skill-node--completed {
+  border-color: var(--accent-strong);
+}
+.skill-node__main {
+  min-width: 0;
+}
+.skill-node__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.skill-node__name {
+  font-weight: 700;
+}
+.skill-node__desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+}
+.skill-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.skill-status--completed {
+  color: var(--accent);
+}
+.skill-status--available {
+  color: var(--warn);
+}
+.skill-status--locked {
+  color: var(--text-muted);
+}
+
+/* ---------- Goals ---------- */
+.goal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.goal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.goal-card--done {
+  border-color: var(--accent-strong);
+}
+.goal-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.goal-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.goal-card__actions .field-inline {
+  flex: 1;
+  align-items: center;
+}
+.goal-card__actions input {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
+}
+.goal-card__unit {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+.icon-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+.icon-btn:hover {
+  color: var(--danger);
+  background: var(--bg-elev);
+}
+
+/* ---------- Dashboard intelligence ---------- */
+.continue-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text);
+  border-color: var(--accent-strong);
+}
+.continue-card:hover {
+  text-decoration: none;
+  box-shadow: var(--glow);
+}
+.continue-card__next {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text);
+}
+.activity-row:hover {
+  text-decoration: none;
+}
+.activity-row__icon {
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+.activity-row__label {
+  font-size: 0.75rem;
+  display: block;
+}
+
 /* ---------- Wide screens: nav moves to the top ---------- */
 @media (min-width: 720px) {
   .navbar {

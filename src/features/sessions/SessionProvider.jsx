@@ -89,10 +89,12 @@ export function SessionProvider({ children }) {
     setActiveSession(null)
     setIsRecovered(false)
 
+    let sessionId = null
     if (user) {
-      await saveSession(user.uid, summary)
+      sessionId = await saveSession(user.uid, summary)
     }
-    return summary
+    // sessionId lets the caller attach a practice log to this session.
+    return { ...summary, sessionId }
   }, [activeSession, user])
 
   const value = useMemo(
