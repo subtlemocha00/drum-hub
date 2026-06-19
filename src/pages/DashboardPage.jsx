@@ -3,34 +3,50 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../features/auth/useAuth.js'
 import { useSession } from '../features/sessions/useSession.js'
+import { useProfile } from '../features/profile/useProfile.js'
 import { getRecentSessions } from '../features/sessions/sessionService.js'
 import { computeCurrentStreak } from '../features/sessions/stats.js'
-import { getRudiments, getAllRudimentProgress } from '../features/rudiments/rudimentService.js'
-import { recentlyPracticed, suggestNextRudiment } from '../features/rudiments/rudimentStats.js'
-import { getWarmups } from '../features/warmups/warmupService.js'
+import { getAllRudimentProgress } from '../features/rudiments/rudimentService.js'
+import { recentlyPracticed } from '../features/rudiments/rudimentStats.js'
 import { getActivePlanProgress } from '../features/plans/planService.js'
-import { getPlanById, nextTask } from '../features/plans/planData.js'
 import { getLastLog } from '../features/logs/logService.js'
+import { getGoals, goalUnit } from '../features/goals/goalService.js'
+import { getPlanById, nextTask } from '../data/practicePlans/index.js'
+import { RUDIMENTS } from '../data/rudiments/index.js'
+import { WARMUPS } from '../data/warmups/index.js'
+import { recommendContent, recommendStartingPlan } from '../data/recommendations.js'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { formatDateTime, formatDuration } from '../lib/format.js'
 import { Spinner } from '../components/Loader.jsx'
-import { Badge } from '../components/Badge.jsx'
 
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
-/** Phase 3 dashboard: actionable guidance — what to practice and what's next. */
+function RecCard({ kind, title, subtitle, to, cta }) {
+  return (
+    <Link to={to} className="card suggest-card">
+      <div>
+        <span className="muted">{kind}</span>
+        <div className="list-card__title">{title}</div>
+        {subtitle && <span className="muted">{subtitle}</span>}
+      </div>
+      <span className="suggest-card__cta">{cta} ›</span>
+    </Link>
+  )
+}
+
+/** Phase 4 dashboard: profile-aware recommendations + actionable guidance. */
 export function DashboardPage() {
   useDocumentTitle('Home')
   const { user } = useAuth()
+  const { profile } = useProfile()
   const { isActive, startSession } = useSession()
   const navigate = useNavigate()
 
   const [sessions, setSessions] = useState([])
-  const [rudiments, setRudiments] = useState([])
   const [progressById, setProgressById] = useState({})
-  const [warmups, setWarmups] = useState([])
   const [activePlan, setActivePlan] = useState(null)
   const [lastLog, setLastLog] = useState(null)
+  const [goals, setGoals] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,19 +55,17 @@ export function DashboardPage() {
     setLoading(true)
     Promise.allSettled([
       getRecentSessions(user.uid, 10),
-      getRudiments(user.uid),
       getAllRudimentProgress(user.uid),
-      getWarmups(user.uid),
       getActivePlanProgress(user.uid),
-      getLastLog(user.uid)
-    ]).then(([s, r, p, w, plan, log]) => {
+      getLastLog(user.uid),
+      getGoals(user.uid)
+    ]).then(([s, p, plan, log, g]) => {
       if (cancelled) return
       if (s.status === 'fulfilled') setSessions(s.value)
-      if (r.status === 'fulfilled') setRudiments(r.value)
       if (p.status === 'fulfilled') setProgressById(p.value)
-      if (w.status === 'fulfilled') setWarmups(w.value)
       if (plan.status === 'fulfilled') setActivePlan(plan.value)
       if (log.status === 'fulfilled') setLastLog(log.value)
+      if (g.status === 'fulfilled') setGoals(g.value)
       setLoading(false)
     })
     return () => {
@@ -62,38 +76,28 @@ export function DashboardPage() {
   const streak = computeCurrentStreak(sessions)
   const firstName = (user?.displayName || user?.email || 'drummer').split(' ')[0]
 
-  const suggestion = useMemo(
-    () => suggestNextRudiment(rudiments, progressById),
-    [rudiments, progressById]
-  )
-  const suggestedWarmup = useMemo(
-    () => (warmups.length ? randomItem(warmups) : null),
-    [warmups]
-  )
-  const lastRudiment = useMemo(() => {
-    const recent = recentlyPracticed(rudiments, progressById, 1)
-    return recent[0]?.rudiment ?? null
-  }, [rudiments, progressById])
-
-  // Resolve the active plan's static definition + next task.
+  const recs = useMemo(() => recommendContent(profile, progressById), [profile, progressById])
   const planInfo = useMemo(() => {
     if (!activePlan) return null
     const plan = getPlanById(activePlan.id)
     if (!plan) return null
     return { plan, next: nextTask(plan, activePlan.completedTasks) }
   }, [activePlan])
+  const recommendedPlan = useMemo(
+    () => (!activePlan ? recommendStartingPlan(profile) : null),
+    [activePlan, profile]
+  )
+  const lastRudiment = useMemo(() => {
+    const recent = recentlyPracticed(RUDIMENTS, progressById, 1)
+    return recent[0]?.rudiment ?? null
+  }, [progressById])
 
+  const openGoals = goals.filter((g) => !g.completed).slice(0, 3)
   const lastSession = sessions[0] ?? null
 
   const handleStart = () => {
     startSession()
     navigate('/session')
-  }
-  const randomRudiment = () => {
-    if (rudiments.length) navigate(`/rudiments/${randomItem(rudiments).id}`)
-  }
-  const randomWarmup = () => {
-    if (warmups.length) navigate(`/warmups/${randomItem(warmups).id}`)
   }
 
   return (
@@ -114,8 +118,8 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {/* Continue practice plan */}
-      {planInfo && (
+      {/* Continue / start a plan */}
+      {planInfo ? (
         <section>
           <h2 className="section-title">Continue your plan</h2>
           <Link to={`/plans/${planInfo.plan.id}`} className="card continue-card">
@@ -132,6 +136,19 @@ export function DashboardPage() {
             <span className="suggest-card__cta">Continue ›</span>
           </Link>
         </section>
+      ) : (
+        recommendedPlan && (
+          <section>
+            <h2 className="section-title">Recommended plan</h2>
+            <Link to={`/plans/${recommendedPlan.id}`} className="card continue-card">
+              <div>
+                <span className="list-card__title">{recommendedPlan.name}</span>
+                <p className="continue-card__next muted">{recommendedPlan.summary}</p>
+              </div>
+              <span className="suggest-card__cta">Start ›</span>
+            </Link>
+          </section>
+        )
       )}
 
       <section className="quick-grid">
@@ -141,103 +158,131 @@ export function DashboardPage() {
         <button className="btn btn--lg" onClick={() => navigate('/metronome')}>
           Metronome
         </button>
-        <button className="btn btn--lg" onClick={randomRudiment} disabled={!rudiments.length}>
+        <button className="btn btn--lg" onClick={() => navigate(`/rudiments/${randomItem(RUDIMENTS).id}`)}>
           Random rudiment
         </button>
-        <button className="btn btn--lg" onClick={randomWarmup} disabled={!warmups.length}>
+        <button className="btn btn--lg" onClick={() => navigate(`/warmups/${randomItem(WARMUPS).id}`)}>
           Random warmup
         </button>
       </section>
 
-      {loading ? (
-        <div className="center-row"><Spinner /></div>
-      ) : (
-        <>
-          {/* Suggestions */}
-          {(suggestion || suggestedWarmup) && (
-            <section className="recent">
-              <h2 className="section-title">Suggested for today</h2>
-              {suggestion && (
-                <Link to={`/rudiments/${suggestion.id}`} className="card suggest-card">
-                  <div>
-                    <span className="muted">Rudiment</span>
-                    <div className="list-card__title">{suggestion.name}</div>
-                    <div className="badge-row">
-                      <Badge tone={suggestion.difficulty}>{suggestion.difficulty}</Badge>
-                      <span className="muted">{suggestion.category}</span>
-                    </div>
-                  </div>
-                  <span className="suggest-card__cta">Practice ›</span>
-                </Link>
-              )}
-              {suggestedWarmup && (
-                <Link to={`/warmups/${suggestedWarmup.id}`} className="card suggest-card">
-                  <div>
-                    <span className="muted">Warmup</span>
-                    <div className="list-card__title">{suggestedWarmup.name}</div>
+      {/* Recommended content */}
+      <section className="recent">
+        <h2 className="section-title">Recommended for you</h2>
+        {recs.warmup && (
+          <RecCard
+            kind="Warmup"
+            title={recs.warmup.name}
+            subtitle={`${recs.warmup.category} · ${recs.warmup.durationMinutes} min`}
+            to={`/warmups/${recs.warmup.id}`}
+            cta="Start"
+          />
+        )}
+        {recs.rudiment && (
+          <RecCard
+            kind="Rudiment"
+            title={recs.rudiment.name}
+            subtitle={recs.rudiment.category}
+            to={`/rudiments/${recs.rudiment.id}`}
+            cta="Practice"
+          />
+        )}
+        {recs.groove && (
+          <RecCard
+            kind="Groove"
+            title={recs.groove.name}
+            subtitle={`${recs.groove.style} · ${recs.groove.bpm} BPM`}
+            to={`/grooves/${recs.groove.id}`}
+            cta="Play"
+          />
+        )}
+      </section>
+
+      {/* Current goals */}
+      {openGoals.length > 0 && (
+        <section className="recent">
+          <div className="chart-head">
+            <h2 className="section-title">Current goals</h2>
+            <Link to="/goals" className="muted">All ›</Link>
+          </div>
+          <ul className="card-list">
+            {openGoals.map((goal) => {
+              const pct = goal.targetValue
+                ? Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100))
+                : 0
+              return (
+                <li key={goal.id} className="card goal-mini">
+                  <div className="goal-mini__head">
+                    <span className="list-card__title">{goal.title}</span>
                     <span className="muted">
-                      {suggestedWarmup.focus} · {suggestedWarmup.durationMinutes} min
+                      {goal.currentValue}/{goal.targetValue} {goalUnit(goal.type)}
                     </span>
                   </div>
-                  <span className="suggest-card__cta">Start ›</span>
-                </Link>
-              )}
-            </section>
-          )}
+                  <div className="progress-bar">
+                    <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
-          {/* Recent activity */}
-          <section className="recent">
-            <h2 className="section-title">Recent activity</h2>
-            <ul className="card-list">
-              <li className="card activity-row">
-                <span className="activity-row__icon" aria-hidden="true">⏱</span>
+      {/* Recent activity */}
+      {!loading && (
+        <section className="recent">
+          <h2 className="section-title">Recent activity</h2>
+          <ul className="card-list">
+            <li className="card activity-row">
+              <span className="activity-row__icon" aria-hidden="true">⏱</span>
+              <div className="list-card__main">
+                <span className="activity-row__label muted">Last session</span>
+                <span>
+                  {lastSession
+                    ? `${formatDuration(lastSession.durationSeconds)} · ${formatDateTime(lastSession.startTime)}`
+                    : 'No sessions yet'}
+                </span>
+              </div>
+            </li>
+            <li>
+              <Link to="/practice-logs" className="card activity-row">
+                <span className="activity-row__icon" aria-hidden="true">📓</span>
                 <div className="list-card__main">
-                  <span className="activity-row__label muted">Last session</span>
+                  <span className="activity-row__label muted">Last log</span>
                   <span>
-                    {lastSession
-                      ? `${formatDuration(lastSession.durationSeconds)} · ${formatDateTime(lastSession.startTime)}`
-                      : 'No sessions yet'}
+                    {lastLog
+                      ? lastLog.notes || lastLog.practicedItems.join(', ') || 'Logged'
+                      : 'No logs yet'}
                   </span>
                 </div>
-              </li>
-              <li>
-                <Link to="/practice-logs" className="card activity-row">
-                  <span className="activity-row__icon" aria-hidden="true">📓</span>
+                <span className="muted">›</span>
+              </Link>
+            </li>
+            <li>
+              {lastRudiment ? (
+                <Link to={`/rudiments/${lastRudiment.id}`} className="card activity-row">
+                  <span className="activity-row__icon" aria-hidden="true">✋</span>
                   <div className="list-card__main">
-                    <span className="activity-row__label muted">Last log</span>
-                    <span>
-                      {lastLog
-                        ? lastLog.notes || lastLog.practicedItems.join(', ') || 'Logged'
-                        : 'No logs yet'}
-                    </span>
+                    <span className="activity-row__label muted">Last rudiment</span>
+                    <span>{lastRudiment.name}</span>
                   </div>
                   <span className="muted">›</span>
                 </Link>
-              </li>
-              <li>
-                {lastRudiment ? (
-                  <Link to={`/rudiments/${lastRudiment.id}`} className="card activity-row">
-                    <span className="activity-row__icon" aria-hidden="true">✋</span>
-                    <div className="list-card__main">
-                      <span className="activity-row__label muted">Last rudiment</span>
-                      <span>{lastRudiment.name}</span>
-                    </div>
-                    <span className="muted">›</span>
-                  </Link>
-                ) : (
-                  <div className="card activity-row">
-                    <span className="activity-row__icon" aria-hidden="true">✋</span>
-                    <div className="list-card__main">
-                      <span className="activity-row__label muted">Last rudiment</span>
-                      <span>Nothing practiced yet</span>
-                    </div>
+              ) : (
+                <div className="card activity-row">
+                  <span className="activity-row__icon" aria-hidden="true">✋</span>
+                  <div className="list-card__main">
+                    <span className="activity-row__label muted">Last rudiment</span>
+                    <span>Nothing practiced yet</span>
                   </div>
-                )}
-              </li>
-            </ul>
-          </section>
-        </>
+                </div>
+              )}
+            </li>
+          </ul>
+        </section>
       )}
+
+      {loading && <div className="center-row"><Spinner /></div>}
     </div>
   )
 }

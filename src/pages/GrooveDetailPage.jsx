@@ -6,9 +6,15 @@ import { getGroove } from '../features/grooves/grooveService.js'
 import { FavoriteButton } from '../components/FavoriteButton.jsx'
 import { Badge } from '../components/Badge.jsx'
 import { YouTubeEmbed } from '../components/YouTubeEmbed.jsx'
+import { RelatedList } from '../components/RelatedList.jsx'
 import { FullScreenLoader } from '../components/Loader.jsx'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { recordView } from '../lib/recentlyViewed.js'
+import {
+  rudimentsForGroove,
+  warmupsForGroove,
+  plansForGroove
+} from '../data/relationships.js'
 
 /** Groove detail page. Records a "recently viewed" entry for the dashboard. */
 export function GrooveDetailPage() {
@@ -70,6 +76,7 @@ export function GrooveDetailPage() {
       <header className="page__head">
         <h1 className="page__title">{groove.name}</h1>
         <div className="badge-row">
+          <Badge tone={groove.difficulty}>{groove.difficulty}</Badge>
           <Badge>{groove.style}</Badge>
           <span className="muted">
             {groove.timeSignature} · {groove.bpm} BPM
@@ -86,17 +93,42 @@ export function GrooveDetailPage() {
         Practice at {groove.bpm} BPM
       </button>
 
-      {groove.notes && (
+      {groove.practiceNotes && (
         <section className="card">
-          <h2 className="section-title">Notes</h2>
-          <p>{groove.notes}</p>
+          <h2 className="section-title">Practice notes</h2>
+          <p>{groove.practiceNotes}</p>
         </section>
       )}
 
       <section>
         <h2 className="section-title">Video</h2>
-        <YouTubeEmbed url={groove.youtubeUrl} title={groove.name} />
+        <YouTubeEmbed url={groove.videoUrl} title={groove.name} />
       </section>
+
+      <RelatedList
+        title="Required rudiments"
+        items={rudimentsForGroove(groove).map((r) => ({
+          route: `/rudiments/${r.id}`,
+          name: r.name,
+          subtitle: r.category
+        }))}
+      />
+      <RelatedList
+        title="Recommended warmups"
+        items={warmupsForGroove(groove).map((w) => ({
+          route: `/warmups/${w.id}`,
+          name: w.name,
+          subtitle: `${w.category} · ${w.durationMinutes} min`
+        }))}
+      />
+      <RelatedList
+        title="Related plans"
+        items={plansForGroove(groove.id).map((p) => ({
+          route: `/plans/${p.id}`,
+          name: p.name,
+          subtitle: `${p.level} · ${p.durationLabel}`
+        }))}
+      />
     </div>
   )
 }

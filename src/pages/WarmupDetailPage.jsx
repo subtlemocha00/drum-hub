@@ -5,9 +5,11 @@ import { useAuth } from '../features/auth/useAuth.js'
 import { getWarmup } from '../features/warmups/warmupService.js'
 import { FavoriteButton } from '../components/FavoriteButton.jsx'
 import { Badge } from '../components/Badge.jsx'
+import { RelatedList } from '../components/RelatedList.jsx'
 import { FullScreenLoader } from '../components/Loader.jsx'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { formatDuration } from '../lib/format.js'
+import { rudimentsForWarmup } from '../data/relationships.js'
 
 /** Warmup detail with a simple count-down timer (no automation). */
 export function WarmupDetailPage() {
@@ -86,7 +88,7 @@ export function WarmupDetailPage() {
           type="warmup"
           refId={warmup.id}
           name={warmup.name}
-          subtitle={`${warmup.focus} · ${warmup.durationMinutes} min`}
+          subtitle={`${warmup.category} · ${warmup.durationMinutes} min`}
           size="lg"
         />
       </div>
@@ -94,12 +96,13 @@ export function WarmupDetailPage() {
       <header className="page__head">
         <h1 className="page__title">{warmup.name}</h1>
         <div className="badge-row">
-          <Badge>{warmup.focus}</Badge>
+          <Badge tone={warmup.difficulty}>{warmup.difficulty}</Badge>
+          <Badge>{warmup.category?.replace('-', ' ')}</Badge>
           <span className="muted">{warmup.durationMinutes} min</span>
         </div>
       </header>
 
-      <p>{warmup.description}</p>
+      {warmup.goal && <p><strong>Goal:</strong> {warmup.goal}</p>}
 
       <section className="card timer">
         <span className={'timer__value' + (running ? ' timer__value--live' : '')}>
@@ -135,6 +138,15 @@ export function WarmupDetailPage() {
           ))}
         </ol>
       </section>
+
+      <RelatedList
+        title="Recommended rudiments"
+        items={rudimentsForWarmup(warmup).map((r) => ({
+          route: `/rudiments/${r.id}`,
+          name: r.name,
+          subtitle: r.category
+        }))}
+      />
     </div>
   )
 }

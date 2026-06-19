@@ -1,22 +1,13 @@
 /**
- * Warmup catalog persistence — `users/{uid}/warmups/{id}`, seeded on first use.
+ * Warmup access. The catalog is static content (src/data/warmups) — no
+ * Firestore.
  */
-import { doc, getDoc } from 'firebase/firestore'
+import { WARMUPS, getWarmupById } from '../../data/warmups/index.js'
 
-import { db } from '../../lib/firebase/firebase.js'
-import { loadOrSeedCatalog } from '../../lib/firebase/seed.js'
-import { WARMUPS } from './warmupData.js'
-
-export function getWarmups(uid) {
-  return loadOrSeedCatalog(uid, 'warmups', WARMUPS)
+export async function getWarmups() {
+  return WARMUPS
 }
 
 export async function getWarmup(uid, id) {
-  const ref = doc(db, 'users', uid, 'warmups', id)
-  const snap = await getDoc(ref)
-  if (snap.exists()) return { id: snap.id, ...snap.data() }
-
-  await loadOrSeedCatalog(uid, 'warmups', WARMUPS)
-  const retry = await getDoc(ref)
-  return retry.exists() ? { id: retry.id, ...retry.data() } : null
+  return getWarmupById(id)
 }

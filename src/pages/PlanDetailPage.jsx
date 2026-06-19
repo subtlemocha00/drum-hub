@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { useAuth } from '../features/auth/useAuth.js'
-import { getPlanById, nextTask, countCompleted } from '../features/plans/planData.js'
+import { getPlanById, nextTask, countCompleted } from '../data/practicePlans/index.js'
 import { getPlanProgress, startPlan, toggleTask } from '../features/plans/planService.js'
 import { Badge } from '../components/Badge.jsx'
 import { FullScreenLoader } from '../components/Loader.jsx'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
+
+const REF_ROUTE = { rudiment: '/rudiments', groove: '/grooves', warmup: '/warmups' }
 
 /** Plan detail: start/resume, track per-task completion across weeks and days. */
 export function PlanDetailPage() {
@@ -153,7 +155,7 @@ export function PlanDetailPage() {
                     <h3 className="plan-day__title">Day {day.day}</h3>
                     <ul className="task-list">
                       {day.tasks.map((task) => (
-                        <li key={task.id}>
+                        <li key={task.id} className="task-row">
                           <label className="task">
                             <input
                               type="checkbox"
@@ -163,6 +165,16 @@ export function PlanDetailPage() {
                             <span className="task__label">{task.label}</span>
                             <span className="task__min muted">{task.minutes}m</span>
                           </label>
+                          {task.ref && REF_ROUTE[task.ref.type] && (
+                            <Link
+                              className="task__ref"
+                              to={`${REF_ROUTE[task.ref.type]}/${task.ref.id}`}
+                              aria-label={`Open ${task.ref.type}`}
+                              title={`Open ${task.ref.type}`}
+                            >
+                              ↗
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>

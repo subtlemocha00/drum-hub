@@ -3,21 +3,24 @@ import { Link } from 'react-router-dom'
 
 import { useAuth } from '../features/auth/useAuth.js'
 import { getWarmups } from '../features/warmups/warmupService.js'
-import { WARMUP_FOCUS } from '../features/warmups/warmupData.js'
+import { WARMUP_CATEGORIES, WARMUP_DURATIONS } from '../data/warmups/index.js'
 import { FilterChips } from '../components/FilterChips.jsx'
 import { FavoriteButton } from '../components/FavoriteButton.jsx'
 import { Badge } from '../components/Badge.jsx'
 import { Spinner } from '../components/Loader.jsx'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 
-/** Browse short structured warmup routines. */
+const prettyCategory = (c) => c.replace('-', ' ')
+
+/** Browse warmup routines, filtered by category and duration. */
 export function WarmupsPage() {
   useDocumentTitle('Warmups')
   const { user } = useAuth()
   const [warmups, setWarmups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [focus, setFocus] = useState(null)
+  const [category, setCategory] = useState(null)
+  const [duration, setDuration] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -33,8 +36,13 @@ export function WarmupsPage() {
   }, [user])
 
   const filtered = useMemo(
-    () => (focus ? warmups.filter((w) => w.focus === focus) : warmups),
-    [warmups, focus]
+    () =>
+      warmups.filter((w) => {
+        if (category && w.category !== category) return false
+        if (duration && w.durationMinutes !== duration) return false
+        return true
+      }),
+    [warmups, category, duration]
   )
 
   return (
@@ -44,14 +52,30 @@ export function WarmupsPage() {
         <p className="muted">Short routines to get loose before you dig in.</p>
       </header>
 
-      <FilterChips options={WARMUP_FOCUS} value={focus} onChange={setFocus} />
+      <FilterChips options={WARMUP_CATEGORIES} value={category} onChange={setCategory} />
+      <div className="chips">
+        <button className={'chip' + (duration === null ? ' chip--active' : '')} onClick={() => setDuration(null)}>
+          Any length
+        </button>
+        {WARMUP_DURATIONS.map((d) => (
+          <button
+            key={d}
+            className={'chip' + (duration === d ? ' chip--active' : '')}
+            onClick={() => setDuration(d)}
+          >
+            {d} min
+          </button>
+        ))}
+      </div>
+
+      <p className="muted result-count">{filtered.length} warmups</p>
 
       {loading ? (
         <div className="center-row"><Spinner /></div>
       ) : error ? (
         <p className="notice notice--error">{error}</p>
       ) : filtered.length === 0 ? (
-        <p className="empty">No warmups in this focus area yet.</p>
+        <p className="empty">No warmups match these filters.</p>
       ) : (
         <ul className="card-list">
           {filtered.map((w) => (
@@ -60,15 +84,15 @@ export function WarmupsPage() {
                 <div className="list-card__main">
                   <span className="list-card__title">{w.name}</span>
                   <span className="list-card__meta">
-                    <Badge>{w.focus}</Badge>
-                    <span className="muted">{w.durationMinutes} min</span>
+                    <Badge tone={w.difficulty}>{w.difficulty}</Badge>
+                    <span className="muted">{prettyCategory(w.category)} · {w.durationMinutes} min</span>
                   </span>
                 </div>
                 <FavoriteButton
                   type="warmup"
                   refId={w.id}
                   name={w.name}
-                  subtitle={`${w.focus} · ${w.durationMinutes} min`}
+                  subtitle={`${prettyCategory(w.category)} · ${w.durationMinutes} min`}
                 />
               </Link>
             </li>

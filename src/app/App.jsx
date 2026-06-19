@@ -5,6 +5,9 @@ import { FullScreenLoader } from '../components/Loader.jsx'
 import { AppLayout } from './AppLayout.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 import { PublicOnlyRoute } from './PublicOnlyRoute.jsx'
+import { OnboardingGate } from './OnboardingGate.jsx'
+import { OnboardingPage } from '../pages/OnboardingPage.jsx'
+import { SearchPage } from '../pages/SearchPage.jsx'
 import { DashboardPage } from '../pages/DashboardPage.jsx'
 import { LoginPage } from '../pages/LoginPage.jsx'
 import { MetronomePage } from '../pages/MetronomePage.jsx'
@@ -45,9 +48,11 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
-      {/* Authenticated app, wrapped in the shared shell. */}
+      {/* Authenticated app — onboarding gate first, then the shared shell. */}
       <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
+        <Route element={<OnboardingGate />}>
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/metronome" element={<MetronomePage />} />
           <Route path="/session" element={<SessionPage />} />
@@ -71,6 +76,10 @@ export default function App() {
           <Route path="/practice-logs" element={<PracticeLogsPage />} />
           <Route path="/skill-tree" element={<SkillTreePage />} />
           <Route path="/goals" element={<GoalsPage />} />
+
+          {/* Phase 4 — global search */}
+          <Route path="/search" element={<SearchPage />} />
+          </Route>
         </Route>
       </Route>
 

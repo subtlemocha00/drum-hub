@@ -21,6 +21,9 @@ export function AppLayout() {
           <span className="app-header__logo" aria-hidden="true">◉</span>
           Drum&nbsp;Hub
         </Link>
+        <Link to="/search" className="app-header__action app-header__action--push" aria-label="Search" title="Search">
+          🔍
+        </Link>
         <Link to="/settings" className="app-header__action" aria-label="Settings" title="Settings">
           ⚙
         </Link>

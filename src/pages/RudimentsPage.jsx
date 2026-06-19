@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { useAuth } from '../features/auth/useAuth.js'
 import { getRudiments } from '../features/rudiments/rudimentService.js'
-import { RUDIMENT_CATEGORIES } from '../features/rudiments/rudimentData.js'
+import { RUDIMENT_CATEGORIES, DIFFICULTIES } from '../data/rudiments/index.js'
 import { FilterChips } from '../components/FilterChips.jsx'
 import { FavoriteButton } from '../components/FavoriteButton.jsx'
 import { Badge } from '../components/Badge.jsx'
@@ -19,6 +19,7 @@ export function RudimentsPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState(null)
+  const [difficulty, setDifficulty] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -37,10 +38,11 @@ export function RudimentsPage() {
     const q = search.trim().toLowerCase()
     return rudiments.filter((r) => {
       if (category && r.category !== category) return false
+      if (difficulty && r.difficulty !== difficulty) return false
       if (q && !r.name.toLowerCase().includes(q)) return false
       return true
     })
-  }, [rudiments, search, category])
+  }, [rudiments, search, category, difficulty])
 
   return (
     <div className="page">
@@ -59,6 +61,9 @@ export function RudimentsPage() {
       />
 
       <FilterChips options={RUDIMENT_CATEGORIES} value={category} onChange={setCategory} />
+      <FilterChips options={DIFFICULTIES} value={difficulty} onChange={setDifficulty} allLabel="Any level" />
+
+      <p className="muted result-count">{filtered.length} rudiments</p>
 
       {loading ? (
         <div className="center-row"><Spinner /></div>

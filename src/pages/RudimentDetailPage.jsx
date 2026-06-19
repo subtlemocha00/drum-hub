@@ -11,9 +11,15 @@ import {
 import { FavoriteButton } from '../components/FavoriteButton.jsx'
 import { Badge } from '../components/Badge.jsx'
 import { YouTubeEmbed } from '../components/YouTubeEmbed.jsx'
+import { RelatedList } from '../components/RelatedList.jsx'
 import { FullScreenLoader, Spinner } from '../components/Loader.jsx'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { formatDuration } from '../lib/format.js'
+import {
+  groovesForRudiment,
+  warmupsForRudiment,
+  plansForRudiment
+} from '../data/relationships.js'
 
 /** Rudiment detail + explicit, user-driven practice tracking. */
 export function RudimentDetailPage() {
@@ -250,10 +256,17 @@ export function RudimentDetailPage() {
         )}
       </section>
 
-      {rudiment.notes && (
+      {rudiment.practiceNotes && (
         <section className="card">
           <h2 className="section-title">Practice notes</h2>
-          <p>{rudiment.notes}</p>
+          <p>{rudiment.practiceNotes}</p>
+        </section>
+      )}
+
+      {rudiment.commonUses && (
+        <section className="card">
+          <h2 className="section-title">Common uses</h2>
+          <p>{rudiment.commonUses}</p>
         </section>
       )}
 
@@ -261,6 +274,31 @@ export function RudimentDetailPage() {
         <h2 className="section-title">Video lesson</h2>
         <YouTubeEmbed url={rudiment.videoUrl} title={rudiment.name} />
       </section>
+
+      <RelatedList
+        title="Related grooves"
+        items={groovesForRudiment(rudiment.id).map((g) => ({
+          route: `/grooves/${g.id}`,
+          name: g.name,
+          subtitle: `${g.style} · ${g.bpm} BPM`
+        }))}
+      />
+      <RelatedList
+        title="Related warmups"
+        items={warmupsForRudiment(rudiment.id).map((w) => ({
+          route: `/warmups/${w.id}`,
+          name: w.name,
+          subtitle: `${w.category} · ${w.durationMinutes} min`
+        }))}
+      />
+      <RelatedList
+        title="Related plans"
+        items={plansForRudiment(rudiment.id).map((p) => ({
+          route: `/plans/${p.id}`,
+          name: p.name,
+          subtitle: `${p.level} · ${p.durationLabel}`
+        }))}
+      />
     </div>
   )
 }

@@ -1394,6 +1394,133 @@ code {
   display: block;
 }
 
+/* ============================================================
+   Phase 4 — content expansion, search, onboarding
+   ============================================================ */
+
+.result-count {
+  font-size: 0.8rem;
+  margin-top: -0.2rem;
+}
+
+/* Header can hold multiple actions */
+.app-header {
+  gap: 0.15rem;
+}
+.app-header__action {
+  margin-left: 0;
+}
+.app-header__action--push {
+  margin-left: auto;
+}
+
+/* Capitalize the plan level / difficulty section headings */
+.plan-level .section-title,
+.skill-branch .section-title {
+  text-transform: capitalize;
+}
+.plan-level {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Plan task rows with a reference link */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.task-row .task {
+  flex: 1;
+}
+.task__ref {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 1rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+}
+.task__ref:hover {
+  text-decoration: none;
+  background: var(--bg-elev);
+}
+
+/* Dashboard mini goals */
+.goal-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.goal-mini__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* ---------- Onboarding ---------- */
+.onboard-page {
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.5rem 1rem 3rem;
+}
+.onboard-card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.onboard-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.onboard-head h1 {
+  font-size: 1.5rem;
+}
+.onboard-group {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.onboard-group legend {
+  padding: 0;
+}
+.onboard-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.onboard-option {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 0.75rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.onboard-option:hover {
+  border-color: var(--accent-strong);
+}
+.onboard-option--active {
+  border-color: transparent;
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: var(--glow);
+}
+
 /* ---------- Wide screens: nav moves to the top ---------- */
 @media (min-width: 720px) {
   .navbar {

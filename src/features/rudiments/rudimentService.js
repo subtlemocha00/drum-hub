@@ -1,31 +1,26 @@
 /**
- * Rudiment catalog + progress persistence.
+ * Rudiment access + progress persistence.
  *
- *   users/{uid}/rudiments/{id}          -> catalog (seeded from rudimentData)
- *   users/{uid}/rudimentProgress/{id}   -> per-rudiment progress
+ * The rudiment CATALOG is static content (src/data/rudiments) — no Firestore
+ * reads/writes for the library itself. Only per-rudiment PROGRESS is stored:
+ *
+ *   users/{uid}/rudimentProgress/{id}
  *
  * Progress is explicit, user-driven logging — no automatic detection.
  */
 import { doc, getDoc, getDocs, collection, serverTimestamp, setDoc } from 'firebase/firestore'
 
 import { db } from '../../lib/firebase/firebase.js'
-import { loadOrSeedCatalog } from '../../lib/firebase/seed.js'
-import { RUDIMENTS } from './rudimentData.js'
+import { RUDIMENTS, getRudimentById } from '../../data/rudiments/index.js'
 
-/** All rudiments (seeds the catalog on first use). */
-export function getRudiments(uid) {
-  return loadOrSeedCatalog(uid, 'rudiments', RUDIMENTS)
+/** All rudiments (static). */
+export async function getRudiments() {
+  return RUDIMENTS
 }
 
-/** A single rudiment by id, seeding the catalog if deep-linked before browsing. */
+/** A single rudiment by id (static). */
 export async function getRudiment(uid, id) {
-  const ref = doc(db, 'users', uid, 'rudiments', id)
-  const snap = await getDoc(ref)
-  if (snap.exists()) return { id: snap.id, ...snap.data() }
-
-  await loadOrSeedCatalog(uid, 'rudiments', RUDIMENTS)
-  const retry = await getDoc(ref)
-  return retry.exists() ? { id: retry.id, ...retry.data() } : null
+  return getRudimentById(id)
 }
 
 function mapProgress(id, data) {
