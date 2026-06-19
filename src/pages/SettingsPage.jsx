@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
 import { useAuth } from '../features/auth/useAuth.js'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { formatDateTime } from '../lib/format.js'
 
 /** Account settings (Phase 1): profile summary + sign out. */
 export function SettingsPage() {
+  useDocumentTitle('Settings')
   const { user, logout } = useAuth()
   const [busy, setBusy] = useState(false)
 

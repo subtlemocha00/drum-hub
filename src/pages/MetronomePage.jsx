@@ -1,4 +1,7 @@
+import { useLocation } from 'react-router-dom'
+
 import { useMetronome } from '../features/metronome/useMetronome.js'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 
 const TIME_SIGNATURES = [
   { label: '4/4', beats: 4 },
@@ -12,6 +15,11 @@ const BPM_MAX = 240
 
 /** Minimal, accurate metronome (Phase 1): BPM, time signature, start/stop. */
 export function MetronomePage() {
+  useDocumentTitle('Metronome')
+  // A rudiment/groove page can hand off a starting tempo via router state.
+  const location = useLocation()
+  const initialBpm = Number(location.state?.bpm) || 120
+
   const {
     bpm,
     beatsPerMeasure,
@@ -20,7 +28,7 @@ export function MetronomePage() {
     toggle,
     setBpm,
     setBeatsPerMeasure
-  } = useMetronome()
+  } = useMetronome({ initialBpm })
 
   return (
     <div className="page page--center">

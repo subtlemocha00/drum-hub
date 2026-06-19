@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useSession } from '../features/sessions/useSession.js'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { formatDuration } from '../lib/format.js'
 
 /** Practice session view: start, run, and end a manually-tracked session. */
 export function SessionPage() {
+  useDocumentTitle('Session')
   const { isActive, elapsedSeconds, startSession, endSession, discardSession } =
     useSession()
   const navigate = useNavigate()

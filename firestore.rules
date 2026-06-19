@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// Drum Hub — Firestore security rules.
+//
+// All application data lives under users/{uid}/... and is private to that user.
+// A user may read and write only their own profile document and every
+// subcollection beneath it (practiceSessions, rudiments, rudimentProgress,
+// grooves, warmups, favorites). There are no public reads and no cross-user
+// access of any kind.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The user's own profile document.
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Everything nested under the user (all current and future subcollections).
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Anything not explicitly matched above is denied by default.
+  }
+}

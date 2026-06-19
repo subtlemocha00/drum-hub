@@ -679,6 +679,363 @@ code {
   }
 }
 
+/* ============================================================
+   Phase 2 — library, practice tracking, favorites
+   ============================================================ */
+
+/* ---------- Search + filter chips ---------- */
+.search-input {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(22, 224, 189, 0.15);
+}
+
+.chips {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar {
+  display: none;
+}
+.chip {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.chip--active {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.badge--ok {
+  color: var(--ok);
+  border-color: rgba(61, 220, 151, 0.4);
+  background: rgba(61, 220, 151, 0.08);
+}
+.badge--warn {
+  color: var(--warn);
+  border-color: rgba(255, 180, 84, 0.4);
+  background: rgba(255, 180, 84, 0.08);
+}
+.badge--danger {
+  color: #ff7d9b;
+  border-color: rgba(255, 56, 100, 0.4);
+  background: rgba(255, 56, 100, 0.08);
+}
+.badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Generic card lists ---------- */
+.card-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  color: var(--text);
+}
+.list-card:hover {
+  text-decoration: none;
+  border-color: var(--accent-strong);
+}
+.list-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.list-card__title {
+  font-weight: 700;
+}
+.list-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Favorite star ---------- */
+.fav-btn {
+  flex: 0 0 auto;
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text-muted);
+  padding: 0.2rem;
+  transition: transform 0.05s ease, color 0.15s ease;
+}
+.fav-btn:hover {
+  color: var(--accent);
+}
+.fav-btn:active {
+  transform: scale(0.9);
+}
+.fav-btn--active {
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+.fav-btn--lg {
+  font-size: 1.7rem;
+}
+
+/* ---------- Detail pages ---------- */
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.back-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.back-link:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+.notation-card {
+  padding: 1rem 1.1rem;
+}
+.notation {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* ---------- Practice tracking ---------- */
+.practice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.progress-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.progress-stat__value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.progress-stat__value.accent {
+  color: var(--accent);
+}
+.progress-stat__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-strong), var(--accent));
+  transition: width 0.3s ease;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.field-inline {
+  display: flex;
+  gap: 0.4rem;
+}
+.field-inline input {
+  min-width: 0;
+}
+.btn--sm {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
+}
+.btn-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn-row .btn {
+  flex: 1;
+}
+.timer-inline {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.timer-inline__value {
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+/* ---------- Video embed ---------- */
+.video-embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+}
+.video-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---------- Warmup steps ---------- */
+.steps {
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.steps__item {
+  counter-increment: step;
+  padding: 0.75rem 0.9rem 0.75rem 2.6rem;
+  position: relative;
+}
+.steps__item::before {
+  content: counter(step);
+  position: absolute;
+  left: 0.8rem;
+  top: 0.75rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Library hub ---------- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.1rem;
+  color: var(--text);
+}
+.hub-card:hover {
+  text-decoration: none;
+  border-color: var(--accent-strong);
+}
+.hub-card__icon {
+  font-size: 1.6rem;
+}
+.hub-card__title {
+  font-weight: 700;
+}
+.hub-card__desc {
+  font-size: 0.82rem;
+}
+
+/* ---------- Dashboard quick grid + suggestion ---------- */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.suggest-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text);
+}
+.suggest-card:hover {
+  text-decoration: none;
+  border-color: var(--accent-strong);
+}
+.suggest-card__cta {
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* ---------- Wide screens: nav moves to the top ---------- */
 @media (min-width: 720px) {
   .navbar {
