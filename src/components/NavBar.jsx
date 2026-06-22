@@ -19,6 +19,7 @@ const LINKS = [
     match: ['/progress', '/statistics', '/plans', '/practice-logs', '/skill-tree', '/goals']
   },
   { to: '/metronome', label: 'Metronome', icon: '𝅘𝅥', match: ['/metronome'] },
+  { to: '/training', label: 'Train', icon: '🎯', match: ['/training'] },
   { to: '/session', label: 'Session', icon: '⏱', match: ['/session'] }
 ]
 

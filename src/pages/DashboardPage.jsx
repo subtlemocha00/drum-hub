@@ -11,6 +11,9 @@ import { recentlyPracticed } from '../features/rudiments/rudimentStats.js'
 import { getActivePlanProgress } from '../features/plans/planService.js'
 import { getLastLog } from '../features/logs/logService.js'
 import { getGoals, goalUnit } from '../features/goals/goalService.js'
+import { getPresets } from '../features/metronome/presetService.js'
+import { getSubdivisionProgress } from '../features/metronome/trainingService.js'
+import { SUBDIVISION_BY_VALUE } from '../features/metronome/metronomeConfig.js'
 import { getPlanById, nextTask } from '../data/practicePlans/index.js'
 import { RUDIMENTS } from '../data/rudiments/index.js'
 import { WARMUPS } from '../data/warmups/index.js'
@@ -47,6 +50,8 @@ export function DashboardPage() {
   const [activePlan, setActivePlan] = useState(null)
   const [lastLog, setLastLog] = useState(null)
   const [goals, setGoals] = useState([])
+  const [recentPreset, setRecentPreset] = useState(null)
+  const [subProgress, setSubProgress] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -58,14 +63,18 @@ export function DashboardPage() {
       getAllRudimentProgress(user.uid),
       getActivePlanProgress(user.uid),
       getLastLog(user.uid),
-      getGoals(user.uid)
-    ]).then(([s, p, plan, log, g]) => {
+      getGoals(user.uid),
+      getPresets(user.uid),
+      getSubdivisionProgress(user.uid)
+    ]).then(([s, p, plan, log, g, presets, sub]) => {
       if (cancelled) return
       if (s.status === 'fulfilled') setSessions(s.value)
       if (p.status === 'fulfilled') setProgressById(p.value)
       if (plan.status === 'fulfilled') setActivePlan(plan.value)
       if (log.status === 'fulfilled') setLastLog(log.value)
       if (g.status === 'fulfilled') setGoals(g.value)
+      if (presets.status === 'fulfilled') setRecentPreset(presets.value[0] ?? null)
+      if (sub.status === 'fulfilled') setSubProgress(sub.value)
       setLoading(false)
     })
     return () => {
@@ -164,6 +173,55 @@ export function DashboardPage() {
         <button className="btn btn--lg" onClick={() => navigate(`/warmups/${randomItem(WARMUPS).id}`)}>
           Random warmup
         </button>
+      </section>
+
+      {/* Training tools (Phase 5A) */}
+      <section className="recent">
+        <h2 className="section-title">Training</h2>
+
+        {recentPreset && (
+          <button
+            className="card suggest-card suggest-card--btn"
+            onClick={() =>
+              navigate('/metronome', { state: { config: recentPreset.config } })
+            }
+          >
+            <div>
+              <span className="muted">Recent preset</span>
+              <div className="list-card__title">{recentPreset.name}</div>
+              <span className="muted">
+                {recentPreset.config.bpm} BPM · {recentPreset.config.beatsPerMeasure}/4
+              </span>
+            </div>
+            <span className="suggest-card__cta">Load ›</span>
+          </button>
+        )}
+
+        {subProgress?.lastSubdivision && (
+          <Link to="/training/subdivisions" className="card suggest-card">
+            <div>
+              <span className="muted">Continue trainer</span>
+              <div className="list-card__title">Subdivision Trainer</div>
+              <span className="muted">
+                {SUBDIVISION_BY_VALUE[subProgress.lastSubdivision]?.label ?? '—'} ·{' '}
+                {subProgress.lastMode ?? 'fixed'} mode
+              </span>
+            </div>
+            <span className="suggest-card__cta">Resume ›</span>
+          </Link>
+        )}
+
+        <div className="quick-grid quick-grid--training">
+          <button className="btn btn--lg" onClick={() => navigate('/metronome')}>
+            Metronome
+          </button>
+          <button className="btn btn--lg" onClick={() => navigate('/training/subdivisions')}>
+            Subdivision Trainer
+          </button>
+          <button className="btn btn--lg" onClick={() => navigate('/training')}>
+            Training Center
+          </button>
+        </div>
       </section>
 
       {/* Recommended content */}

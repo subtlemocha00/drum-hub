@@ -1562,3 +1562,388 @@ code {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ============================================================
+   Phase 5A — advanced metronome, presets, training center
+   ============================================================ */
+
+.metronome > section,
+.metronome > .card,
+.metronome > .preset-bar {
+  margin-top: 1rem;
+}
+
+/* Dim the beat row while a measure is silenced (gap / random mute). */
+.beats--muted {
+  opacity: 0.35;
+}
+
+/* ---------- Segmented control ---------- */
+.seg {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.seg__btn {
+  flex: 1 1 auto;
+  min-width: 64px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.6rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.seg__btn:hover:not(:disabled) {
+  border-color: var(--accent-strong);
+}
+.seg__btn--active {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
+.seg__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Control blocks ---------- */
+.control-block {
+  text-align: left;
+}
+.control-block__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.control-block__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+.control-block__head .control-block__title {
+  margin-bottom: 0;
+}
+.control-hint {
+  font-size: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+/* ---------- Accent editor ---------- */
+.accent-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.accent-grid {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.accent-cell {
+  flex: 1 1 0;
+  min-width: 44px;
+  aspect-ratio: 1;
+  font: inherit;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.accent-cell--on {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+
+/* ---------- Toggle switch ---------- */
+.switch {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch__track {
+  display: block;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.switch__track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.switch input:checked + .switch__track {
+  background: rgba(22, 224, 189, 0.2);
+  border-color: var(--accent);
+}
+.switch input:checked + .switch__track::after {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+.switch input:focus-visible + .switch__track {
+  box-shadow: 0 0 0 3px rgba(22, 224, 189, 0.25);
+}
+
+/* ---------- Steppers ---------- */
+.gap-controls,
+.ramp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.75rem;
+}
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.stepper__label {
+  font-size: 0.78rem;
+}
+.stepper__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.stepper__value {
+  min-width: 2.5ch;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Preset bar ---------- */
+.input {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(22, 224, 189, 0.15);
+}
+.preset-bar {
+  padding: 0;
+  overflow: hidden;
+}
+.preset-bar__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  padding: 1rem;
+}
+.preset-bar__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0 1rem 1rem;
+}
+.preset-save {
+  display: flex;
+  gap: 0.5rem;
+}
+.preset-save .input {
+  flex: 1;
+}
+.preset-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.5rem 0.4rem 0.75rem;
+}
+.preset-row .input {
+  flex: 1;
+}
+.preset-row__name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+.preset-row__name:hover {
+  color: var(--accent);
+}
+.preset-row__meta {
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+.preset-row__actions {
+  display: flex;
+  gap: 0.15rem;
+  flex: 0 0 auto;
+}
+.icon-btn--danger:hover {
+  color: var(--danger);
+}
+.preset-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.preset-examples__label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.preset-examples__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* suggest-card used as a <button> (dashboard recent preset) */
+.suggest-card--btn {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.quick-grid--training {
+  margin-top: 0.85rem;
+}
+
+/* ---------- Training center ---------- */
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--text);
+}
+.tool-card:hover {
+  text-decoration: none;
+  border-color: var(--accent-strong);
+}
+.tool-card__icon {
+  font-size: 1.6rem;
+  flex: 0 0 auto;
+  width: 2.4rem;
+  text-align: center;
+}
+.tool-card--soon {
+  opacity: 0.65;
+}
+.tool-grid {
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+}
+.badge--soon {
+  color: var(--warn);
+  border-color: rgba(255, 180, 84, 0.4);
+  background: rgba(255, 180, 84, 0.08);
+  flex: 0 0 auto;
+}
+
+/* ---------- Subdivision trainer ---------- */
+.subtrainer__now {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0.5rem 0;
+}
+.subtrainer__now-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.subtrainer__now-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.count-display {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  min-height: 90px;
+  padding: 1rem 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.count-display--muted {
+  opacity: 0.35;
+}
+.count-token {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  min-width: 1.2ch;
+  text-align: center;
+  transition: color 0.06s ease, transform 0.06s ease, text-shadow 0.06s ease;
+}
+.count-token--beat {
+  font-size: 2.2rem;
+  color: var(--text);
+}
+.count-token--on {
+  color: var(--accent);
+  transform: scale(1.25);
+  text-shadow: var(--glow);
+}
+.count-token--beat.count-token--on {
+  color: var(--danger);
+  text-shadow: 0 0 18px rgba(255, 56, 100, 0.5);
+}

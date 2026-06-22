@@ -29,6 +29,8 @@ import { PlanDetailPage } from '../pages/PlanDetailPage.jsx'
 import { PracticeLogsPage } from '../pages/PracticeLogsPage.jsx'
 import { SkillTreePage } from '../pages/SkillTreePage.jsx'
 import { GoalsPage } from '../pages/GoalsPage.jsx'
+import { TrainingCenterPage } from '../pages/TrainingCenterPage.jsx'
+import { SubdivisionTrainerPage } from '../pages/SubdivisionTrainerPage.jsx'
 
 /** Root "/" — sends users to the dashboard or login based on auth state. */
 function Index() {
@@ -79,6 +81,10 @@ export default function App() {
 
           {/* Phase 4 — global search */}
           <Route path="/search" element={<SearchPage />} />
+
+          {/* Phase 5A — training center */}
+          <Route path="/training" element={<TrainingCenterPage />} />
+          <Route path="/training/subdivisions" element={<SubdivisionTrainerPage />} />
           </Route>
         </Route>
       </Route>
